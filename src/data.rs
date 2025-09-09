@@ -29,8 +29,31 @@ struct Host {
 
 #[derive(Deserialize, Debug)]
 struct Statistics {
-    // TODO All metric types "could" be optional since we don't know if sar was run with -A.
-    //      This could also handle (at least for now) the empty first placeholder statistics entry.
-
+    timestamp: Option<Timestamp>,
+    #[serde(rename = "cpu-load")]
+    cpu_load: Option<Vec<CpuLoad>>,
     // TODO Start with CPU load and implement a "vertical slice" down to graphing the data.
+}
+
+#[derive(Deserialize, Debug)]
+struct Timestamp {
+    date: String,
+    time: String,
+    utc: u32,
+    interval: u32,
+}
+
+#[derive(Deserialize, Debug)]
+struct CpuLoad {
+    cpu: String,
+    usr: f32,
+    nice: f32,
+    sys: f32,
+    iowait: f32,
+    steal: f32,
+    irq: f32,
+    soft: f32,
+    guest: f32,
+    gnice: f32,
+    idle: f32,
 }
