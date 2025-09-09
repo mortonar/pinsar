@@ -15,13 +15,13 @@
 Collect sar data in JSON with:
 ```shell
 mkdir resources
-ssh user@host "sadf -j /var/log/sa/sa## -- -A" > resources/vm1.sar
+ssh user@host "sadf -j /var/log/sa/sa## -- -A" > resources/vm1.sar.json
 ```
 
 Useful jq commands:
 * List all metric types in a sar JSON file:
 ```shell
-jq -C '.sysstat.hosts[0].statistics[1] | keys' resources/vm1.sar
+jq -C '.sysstat.hosts[0].statistics[1] | keys' resources/vm1.sar.json
 [
   "cpu-load",
   "disk",
