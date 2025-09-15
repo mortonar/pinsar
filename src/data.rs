@@ -1,8 +1,28 @@
+use chrono::{DateTime, Utc};
 use serde::Deserialize;
 
 #[derive(Deserialize, Debug)]
 pub struct SarData {
     sysstat: Sysstat,
+}
+
+impl SarData {
+    pub fn cpu_load_sys(&self) -> Vec<(DateTime<Utc>, f32)> {
+        self.sysstat.hosts[0]
+            .statistics
+            .iter()
+            .skip(1)
+            // TODO Hack because some data can be missing
+            .map(
+                |stat| match (stat.timestamp.as_ref(), stat.cpu_load.as_ref()) {
+                    (Some(timestamp), Some(load)) => Some((timestamp.into(), load[0].sys)),
+                    _ => None,
+                },
+            )
+            .filter(Option::is_some)
+            .map(Option::unwrap)
+            .collect()
+    }
 }
 
 #[derive(Deserialize, Debug)]
@@ -41,6 +61,16 @@ struct Timestamp {
     time: String,
     utc: u32,
     interval: u32,
+}
+
+// TODO Handle interpreting in desired timezone
+impl From<&Timestamp> for DateTime<Utc> {
+    fn from(value: &Timestamp) -> Self {
+        let datetime_str = format!("{}T{}Z", value.date, value.time);
+        DateTime::parse_from_rfc3339(&datetime_str)
+            .expect("Failed to parse datetime")
+            .with_timezone(&Utc)
+    }
 }
 
 #[derive(Deserialize, Debug)]

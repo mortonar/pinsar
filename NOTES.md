@@ -37,3 +37,8 @@ jq -C '.sysstat.hosts[0].statistics[1] | keys' resources/vm1.sar.json
   "timestamp"
 ]
 ```
+
+* See [Time Series Chart](https://plotters-rs.github.io/book/basic/basic_data_plotting.html) example in plotters docs.
+  * Basic plotters usage is to create a `BitMapBackend`, then create a `ChartBuilder` on top of that, then configure the chart with axes and labels, then draw series on the chart.
+  * chrono's `DateTime` [can be used](https://docs.rs/plotters/latest/plotters/coord/ranged1d/trait.AsRangedCoord.html#impl-AsRangedCoord-for-Range%3CDateTime%3CZ%3E%3E) for time-based x-axis.
+  * `sadf` outputs timestamps in UTC by default. Perhaps we can convert this to local for now and better handle later?
