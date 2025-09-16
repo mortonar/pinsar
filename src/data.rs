@@ -7,7 +7,7 @@ pub struct SarData {
 }
 
 impl SarData {
-    pub fn cpu_load_sys(&self) -> Vec<(DateTime<Utc>, f32)> {
+    pub fn cpu_load_sys(&self) -> Vec<(DateTime<Utc>, (f32, f32))> {
         self.sysstat.hosts[0]
             .statistics
             .iter()
@@ -15,7 +15,9 @@ impl SarData {
             // TODO Hack because some data can be missing
             .map(
                 |stat| match (stat.timestamp.as_ref(), stat.cpu_load.as_ref()) {
-                    (Some(timestamp), Some(load)) => Some((timestamp.into(), load[0].sys)),
+                    (Some(timestamp), Some(load)) => {
+                        Some((timestamp.into(), (load[0].usr, load[0].sys)))
+                    }
                     _ => None,
                 },
             )

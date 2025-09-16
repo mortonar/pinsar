@@ -2,7 +2,7 @@ mod clioptions;
 mod data;
 
 use crate::clioptions::CliOptions;
-use chrono::Local;
+use chrono::{DateTime, Local, Utc};
 use clap::Parser;
 
 use plotters::prelude::*;
@@ -34,15 +34,30 @@ fn chart_cpu_load_sys(data: &data::SarData) {
     let mut chart = ChartBuilder::on(&root_area)
         .set_label_area_size(LabelAreaPosition::Left, 40)
         .set_label_area_size(LabelAreaPosition::Bottom, 40)
-        .caption("CPU load SYS", ("sans-serif", 40))
+        .caption("CPU load", ("sans-serif", 40))
         .build_cartesian_2d(start_date..end_date, 0.0..max_sys)
         .unwrap();
 
     chart.configure_mesh().draw().unwrap();
 
     chart
-        .draw_series(LineSeries::new(cpu_load_sys, &RED))
-        .unwrap()
-        .label("Line Series")
-        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &RED));
+        .draw_series(AreaSeries::new(
+            cpu_load_sys
+                .iter()
+                .map(|(time, (usr, sys))| (time.clone(), *usr + *sys))
+                .collect::<Vec<(DateTime<Utc>, f32)>>(),
+            0.,
+            &RED,
+        ))
+        .unwrap();
+    chart
+        .draw_series(AreaSeries::new(
+            cpu_load_sys
+                .iter()
+                .map(|(time, (usr, sys))| (time.clone(), *usr))
+                .collect::<Vec<(DateTime<Utc>, f32)>>(),
+            0.,
+            &GREEN,
+        ))
+        .unwrap();
 }
