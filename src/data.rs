@@ -27,11 +27,13 @@ impl SarData {
     }
 }
 
+#[allow(dead_code)]
 #[derive(Deserialize, Debug)]
 struct Sysstat {
     hosts: Vec<Host>,
 }
 
+#[allow(dead_code)]
 #[derive(Deserialize, Debug)]
 struct Host {
     #[serde(rename = "nodename")]
@@ -49,6 +51,7 @@ struct Host {
     statistics: Vec<Statistics>,
 }
 
+#[allow(dead_code)]
 #[derive(Deserialize, Debug)]
 struct Statistics {
     timestamp: Option<Timestamp>,
@@ -57,6 +60,7 @@ struct Statistics {
     // TODO Start with CPU load and implement a "vertical slice" down to graphing the data.
 }
 
+#[allow(dead_code)]
 #[derive(Deserialize, Debug)]
 struct Timestamp {
     date: String,
@@ -75,6 +79,7 @@ impl From<&Timestamp> for DateTime<Utc> {
     }
 }
 
+#[allow(dead_code)]
 #[derive(Deserialize, Debug)]
 struct CpuLoad {
     cpu: String,

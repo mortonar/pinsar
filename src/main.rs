@@ -54,7 +54,7 @@ fn chart_cpu_load_sys(data: &data::SarData) {
         .draw_series(AreaSeries::new(
             cpu_load_sys
                 .iter()
-                .map(|(time, (usr, sys))| (time.clone(), *usr))
+                .map(|(time, (usr, _sys))| (time.clone(), *usr))
                 .collect::<Vec<(DateTime<Utc>, f32)>>(),
             0.,
             &GREEN,
