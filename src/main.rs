@@ -4,8 +4,9 @@ mod data;
 use crate::clioptions::CliOptions;
 use chrono::{DateTime, Local, Utc};
 use clap::Parser;
-
+use plotters::coord::types::RangedCoordf32;
 use plotters::prelude::*;
+use plotters::style::full_palette::{ORANGE, ORANGE_50, PURPLE};
 
 fn main() -> std::io::Result<()> {
     let opts = CliOptions::parse();
@@ -16,48 +17,57 @@ fn main() -> std::io::Result<()> {
     let duration = Local::now() - parse_start;
     println!("Finished parsing JSON: {}ms", duration.num_milliseconds());
 
-    chart_cpu_load_sys(&sar_data);
+    chart_cpu_load_all(&sar_data);
 
     Ok(())
 }
 
-fn chart_cpu_load_sys(data: &data::SarData) {
-    let cpu_load_sys = data.cpu_load_sys();
+fn chart_cpu_load_all(data: &data::SarData) {
+    let cpu_load_all = data.cpu_load_all();
 
-    let root_area = BitMapBackend::new("images/cpu_sys.png", (600, 400)).into_drawing_area();
+    // TODO Make output directory configurable
+    let root_area = BitMapBackend::new("images/cpu_all.png", (600, 400)).into_drawing_area();
     root_area.fill(&WHITE).unwrap();
 
-    let start_date = cpu_load_sys.first().unwrap().0;
-    let end_date = cpu_load_sys.last().unwrap().0;
+    let start_date = cpu_load_all.first().unwrap().0;
+    let end_date = cpu_load_all.last().unwrap().0;
     let max_sys = 100.0f32;
 
+    // TODO Improve image resolution (so we can see more/all the colors)
+    // TODO Chart "Used [%]" label
     let mut chart = ChartBuilder::on(&root_area)
         .set_label_area_size(LabelAreaPosition::Left, 40)
         .set_label_area_size(LabelAreaPosition::Bottom, 40)
-        .caption("CPU load", ("sans-serif", 40))
+        .caption("CPU load (all)", ("sans-serif", 40))
         .build_cartesian_2d(start_date..end_date, 0.0..max_sys)
         .unwrap();
 
     chart.configure_mesh().draw().unwrap();
 
+    // TODO Match colors with kSar?
+    chart_cpu_load(&cpu_load_all, &mut chart, &CYAN, |l| l.usr + l.guest);
+    chart_cpu_load(&cpu_load_all, &mut chart, &BLUE, |l| l.usr + l.soft);
+    chart_cpu_load(&cpu_load_all, &mut chart, &ORANGE_50, |l| l.usr + l.irq);
+    chart_cpu_load(&cpu_load_all, &mut chart, &ORANGE, |l| l.usr + l.steal);
+    chart_cpu_load(&cpu_load_all, &mut chart, &PURPLE, |l| l.usr + l.iowait);
+    chart_cpu_load(&cpu_load_all, &mut chart, &RED, |l| l.usr + l.sys);
+    chart_cpu_load(&cpu_load_all, &mut chart, &YELLOW, |l| l.usr + l.nice);
+    chart_cpu_load(&cpu_load_all, &mut chart, &GREEN, |l| l.usr);
+
+    // TODO Chart "Idle [%]"
+}
+
+fn chart_cpu_load<F: Fn(&data::CpuLoad) -> f32>(
+    data: &[(DateTime<Utc>, &data::CpuLoad)],
+    chart: &mut ChartContext<
+        BitMapBackend,
+        Cartesian2d<RangedDateTime<DateTime<Utc>>, RangedCoordf32>,
+    >,
+    color: &RGBColor,
+    field: F,
+) {
+    let series = data.iter().map(|(time, load)| (time.clone(), field(load)));
     chart
-        .draw_series(AreaSeries::new(
-            cpu_load_sys
-                .iter()
-                .map(|(time, (usr, sys))| (time.clone(), *usr + *sys))
-                .collect::<Vec<(DateTime<Utc>, f32)>>(),
-            0.,
-            &RED,
-        ))
-        .unwrap();
-    chart
-        .draw_series(AreaSeries::new(
-            cpu_load_sys
-                .iter()
-                .map(|(time, (usr, _sys))| (time.clone(), *usr))
-                .collect::<Vec<(DateTime<Utc>, f32)>>(),
-            0.,
-            &GREEN,
-        ))
+        .draw_series(AreaSeries::new(series, 0., color))
         .unwrap();
 }

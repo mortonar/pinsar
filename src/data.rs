@@ -7,7 +7,7 @@ pub struct SarData {
 }
 
 impl SarData {
-    pub fn cpu_load_sys(&self) -> Vec<(DateTime<Utc>, (f32, f32))> {
+    pub fn cpu_load_all(&self) -> Vec<(DateTime<Utc>, &CpuLoad)> {
         self.sysstat.hosts[0]
             .statistics
             .iter()
@@ -15,9 +15,7 @@ impl SarData {
             // TODO Hack because some data can be missing
             .map(
                 |stat| match (stat.timestamp.as_ref(), stat.cpu_load.as_ref()) {
-                    (Some(timestamp), Some(load)) => {
-                        Some((timestamp.into(), (load[0].usr, load[0].sys)))
-                    }
+                    (Some(timestamp), Some(load)) => Some((timestamp.into(), &load[0])),
                     _ => None,
                 },
             )
@@ -81,16 +79,16 @@ impl From<&Timestamp> for DateTime<Utc> {
 
 #[allow(dead_code)]
 #[derive(Deserialize, Debug)]
-struct CpuLoad {
-    cpu: String,
-    usr: f32,
-    nice: f32,
-    sys: f32,
-    iowait: f32,
-    steal: f32,
-    irq: f32,
-    soft: f32,
-    guest: f32,
-    gnice: f32,
-    idle: f32,
+pub struct CpuLoad {
+    pub cpu: String,
+    pub usr: f32,
+    pub nice: f32,
+    pub sys: f32,
+    pub iowait: f32,
+    pub steal: f32,
+    pub irq: f32,
+    pub soft: f32,
+    pub guest: f32,
+    pub gnice: f32,
+    pub idle: f32,
 }
