@@ -12,6 +12,8 @@ fn main() -> std::io::Result<()> {
     let opts = CliOptions::parse();
     let stream = opts.input_stream()?;
 
+    // TODO Parsing sar JSON can be slow for large files.
+    //      We need a more efficient format to parse (e.g. sadf -d)
     let parse_start = Local::now();
     let sar_data: data::SarData = serde_json::from_reader(stream)?;
     let duration = Local::now() - parse_start;
@@ -26,7 +28,7 @@ fn chart_cpu_load_all(data: &data::SarData) {
     let cpu_load_all = data.cpu_load_all();
 
     // TODO Make output directory configurable
-    let root_area = BitMapBackend::new("images/cpu_all.png", (600, 400)).into_drawing_area();
+    let root_area = BitMapBackend::new("images/cpu_all.png", (1920, 1080)).into_drawing_area();
     root_area.fill(&WHITE).unwrap();
 
     let start_date = cpu_load_all.first().unwrap().0;
