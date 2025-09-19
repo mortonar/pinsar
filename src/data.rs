@@ -55,7 +55,6 @@ struct Statistics {
     timestamp: Option<Timestamp>,
     #[serde(rename = "cpu-load")]
     cpu_load: Option<Vec<CpuLoad>>,
-    // TODO Start with CPU load and implement a "vertical slice" down to graphing the data.
 }
 
 #[allow(dead_code)]

@@ -7,10 +7,15 @@ use clap::Parser;
 use plotters::coord::types::RangedCoordf32;
 use plotters::prelude::*;
 use plotters::style::full_palette::{ORANGE, ORANGE_50, PURPLE};
+use std::path::PathBuf;
 
 fn main() -> std::io::Result<()> {
     let opts = CliOptions::parse();
+
     let stream = opts.input_stream()?;
+
+    let output_dir = opts.output_dir;
+    std::fs::create_dir_all(&output_dir)?;
 
     // TODO Parsing sar JSON can be slow for large files.
     //      We need a more efficient format to parse (e.g. sadf -d)
@@ -19,16 +24,16 @@ fn main() -> std::io::Result<()> {
     let duration = Local::now() - parse_start;
     println!("Finished parsing JSON: {}ms", duration.num_milliseconds());
 
-    chart_cpu_load_all(&sar_data);
+    chart_cpu_load_all(&sar_data, &output_dir);
 
     Ok(())
 }
 
-fn chart_cpu_load_all(data: &data::SarData) {
+fn chart_cpu_load_all(data: &data::SarData, output_dir: &PathBuf) {
     let cpu_load_all = data.cpu_load_all();
 
-    // TODO Make output directory configurable
-    let root_area = BitMapBackend::new("images/cpu_all.png", (1920, 1080)).into_drawing_area();
+    let cpu_all_output = output_dir.join("cpu_all.png");
+    let root_area = BitMapBackend::new(&cpu_all_output, (1920, 1080)).into_drawing_area();
     root_area.fill(&WHITE).unwrap();
 
     let start_date = cpu_load_all.first().unwrap().0;
