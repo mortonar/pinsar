@@ -19,17 +19,18 @@ fn main() -> std::io::Result<()> {
 
     // TODO Parsing sar JSON can be slow for large files.
     //      We need a more efficient format to parse (e.g. sadf -d)
+    //      -> Try dropping serde dependency and just parse sadf -d output manually
     let parse_start = Local::now();
     let sar_data: data::SarData = serde_json::from_reader(stream)?;
     let duration = Local::now() - parse_start;
     println!("Finished parsing JSON: {}ms", duration.num_milliseconds());
 
-    chart_cpu_load_all(&sar_data, &output_dir);
+    chart_cpu_load_all(&sar_data, output_dir);
 
     Ok(())
 }
 
-fn chart_cpu_load_all(data: &data::SarData, output_dir: &PathBuf) {
+fn chart_cpu_load_all(data: &data::SarData, output_dir: PathBuf) {
     let cpu_load_all = data.cpu_load_all();
 
     let cpu_all_output = output_dir.join("cpu_all.png");
@@ -73,7 +74,7 @@ fn chart_cpu_load<F: Fn(&data::CpuLoad) -> f32>(
     color: &RGBColor,
     field: F,
 ) {
-    let series = data.iter().map(|(time, load)| (time.clone(), field(load)));
+    let series = data.iter().map(|(time, load)| (*time, field(load)));
     chart
         .draw_series(AreaSeries::new(series, 0., color))
         .unwrap();

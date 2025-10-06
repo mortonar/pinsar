@@ -12,15 +12,13 @@ impl SarData {
             .statistics
             .iter()
             .skip(1)
-            // TODO Hack because some data can be missing
-            .map(
+            // Some data can be missing
+            .filter_map(
                 |stat| match (stat.timestamp.as_ref(), stat.cpu_load.as_ref()) {
                     (Some(timestamp), Some(load)) => Some((timestamp.into(), &load[0])),
                     _ => None,
                 },
             )
-            .filter(Option::is_some)
-            .map(Option::unwrap)
             .collect()
     }
 }
