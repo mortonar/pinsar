@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone, Default)]
 pub struct SarData {
     sysstat: Sysstat,
 }
@@ -24,13 +24,13 @@ impl SarData {
 }
 
 #[allow(dead_code)]
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone, Default)]
 struct Sysstat {
     hosts: Vec<Host>,
 }
 
 #[allow(dead_code)]
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone, Default)]
 struct Host {
     #[serde(rename = "nodename")]
     node_name: String,
@@ -48,7 +48,7 @@ struct Host {
 }
 
 #[allow(dead_code)]
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone, Default)]
 struct Statistics {
     timestamp: Option<Timestamp>,
     #[serde(rename = "cpu-load")]
@@ -56,7 +56,7 @@ struct Statistics {
 }
 
 #[allow(dead_code)]
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone, Default)]
 struct Timestamp {
     date: String,
     time: String,
@@ -75,7 +75,7 @@ impl From<&Timestamp> for DateTime<Utc> {
 }
 
 #[allow(dead_code)]
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone, Default)]
 pub struct CpuLoad {
     pub cpu: String,
     pub usr: f32,

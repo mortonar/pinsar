@@ -5,7 +5,7 @@ use std::io::{BufReader, Error, Read};
 use std::path::PathBuf;
 
 /// Command line options
-#[derive(Parser, Debug)]
+#[derive(Parser, Debug, Clone, Default)]
 #[command(author, version, about = "A graphing tool for Linux SAR data")]
 pub struct CliOptions {
     /// File to read - read from stdin if not provided
