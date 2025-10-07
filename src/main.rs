@@ -2,6 +2,7 @@ mod clioptions;
 mod data;
 
 use crate::clioptions::CliOptions;
+use crate::data::json;
 use chrono::{DateTime, Local, Utc};
 use clap::Parser;
 use plotters::coord::types::RangedCoordf32;
@@ -21,7 +22,7 @@ fn main() -> std::io::Result<()> {
     //      We need a more efficient format to parse (e.g. sadf -d)
     //      -> Try dropping serde dependency and just parse sadf -d output manually
     let parse_start = Local::now();
-    let sar_data: data::SarData = serde_json::from_reader(stream)?;
+    let sar_data: json::SarData = serde_json::from_reader(stream)?;
     let duration = Local::now() - parse_start;
     println!("Finished parsing JSON: {}ms", duration.num_milliseconds());
 
@@ -30,7 +31,7 @@ fn main() -> std::io::Result<()> {
     Ok(())
 }
 
-fn chart_cpu_load_all(data: &data::SarData, output_dir: PathBuf) {
+fn chart_cpu_load_all(data: &json::SarData, output_dir: PathBuf) {
     let cpu_load_all = data.cpu_load_all();
 
     let cpu_all_output = output_dir.join("cpu_all.png");
@@ -65,8 +66,8 @@ fn chart_cpu_load_all(data: &data::SarData, output_dir: PathBuf) {
     // TODO Chart "Idle [%]"
 }
 
-fn chart_cpu_load<F: Fn(&data::CpuLoad) -> f32>(
-    data: &[(DateTime<Utc>, &data::CpuLoad)],
+fn chart_cpu_load<F: Fn(&json::CpuLoad) -> f32>(
+    data: &[(DateTime<Utc>, &json::CpuLoad)],
     chart: &mut ChartContext<
         BitMapBackend,
         Cartesian2d<RangedDateTime<DateTime<Utc>>, RangedCoordf32>,
