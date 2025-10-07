@@ -1,4 +1,4 @@
-use clap::Parser;
+use clap::{Parser, ValueEnum};
 use std::fs::File;
 use std::io;
 use std::io::{BufReader, Error, Read};
@@ -11,6 +11,9 @@ pub struct CliOptions {
     /// File to read - read from stdin if not provided
     #[arg(short, long)]
     pub in_file: Option<PathBuf>,
+
+    #[arg(value_enum, short = 'd', long, default_value_t = IngestDataType::default())]
+    pub ingest_data_type: IngestDataType,
 
     /// Directory to write output files
     #[arg(short, long, default_value = "./images/")]
@@ -31,4 +34,11 @@ impl CliOptions {
             }
         }
     }
+}
+
+#[derive(ValueEnum, Debug, Clone, Copy, Default)]
+pub enum IngestDataType {
+    #[default]
+    Json,
+    Relational,
 }
